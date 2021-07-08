@@ -4,6 +4,9 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog, simpledialog, messagebox
 import pyperclip
 
+
+
+
 #functions for the 'File' menu
 def newFile():      #making a new file
     # global fileName
@@ -92,6 +95,9 @@ def onWindowClose():    #when closing window
             saveFile()
     mainWindow.destroy()
 
+
+
+
 #making the main window
 mainWindow = Tk()
 mainWindow.title('ubahText')
@@ -114,6 +120,14 @@ texteditorWindow.configure(background = '#040720',
 fileTypes = [('All Files', '*.*'),
              ('Text Documents', '*.txt')]
 
+
+
+
+###################################################################################################
+###################################################################################################
+##################################MAKING MENUS IN THE MAIN WINDOW##################################
+###################################################################################################
+###################################################################################################
 #making the menus
 texteditorMenus = Menu(mainWindow, background = '#040720', foreground = 'lightgray')
 mainWindow.configure(menu = texteditorMenus)
@@ -150,12 +164,29 @@ helpMenu = Menu(texteditorMenus, tearoff = False, background = '#040720', foregr
 texteditorMenus.add_cascade(label = 'Help', menu = helpMenu)
 #adding submenus in the 'Help' menu
 helpMenu.add_command(label = 'About ubahText', command = aboutHelp)
+###################################################################################################
+###################################################################################################
+##################################MAKING MENUS IN THE MAIN WINDOW##################################
+###################################################################################################
+###################################################################################################
 
+
+
+
+########################################################################################
+##################################ADDITIONAL FUNCTIONS##################################
+########################################################################################
 #uses Ctrl+c to copy texts
 mainWindow.bind('<Control-Key-c>', copytext)
 
 #when window closes without pressing the 'Exit' option in the 'File' menu
 mainWindow.protocol('WM_DELETE_WINDOW', onWindowClose)
+########################################################################################
+##################################ADDITIONAL FUNCTIONS##################################
+########################################################################################
+
+
+
 
 texteditorWindow.pack(fill = BOTH, expand = YES)
 mainWindow.mainloop()
