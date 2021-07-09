@@ -5,7 +5,7 @@ from tkinter import filedialog, simpledialog, messagebox
 import pyperclip
 
 
-
+#important variables to store data while the window is running
 global opened_file
 global previousFileData
 global numOfNewFile
@@ -29,6 +29,7 @@ def newFile():      #making a new file
         else:
             if messagebox.askyesno('Save File', 'Do you want to save changes?'):
                 saveFile()
+        opened_file = False
         deleteEditorContent()
     mainWindow.title('ubahText')        
 def openFile():     #opening an existing file
@@ -79,10 +80,10 @@ def saveFile():     #saving a new file
 def saveasFile():   #saving as a new file
     global numOfNewFile
     global previousFileData
+    global opened_file
     defaultFileName = 'Untitled-{0}'.format(numOfNewFile)
     savePath = filedialog.asksaveasfilename(filetypes= fileTypes, defaultextension = fileTypes, initialfile = defaultFileName + '.txt')
     if savePath:
-        global opened_file
         opened_file = savePath
         #change main window title to the saved file
         name = savePath
@@ -140,18 +141,33 @@ def selectAll():    #selects/highlights all text in the text editor window
 #function for the 'Help' menu
 def aboutHelp():    #shows information about the Text Editor
     label = messagebox.showinfo('About ubahText', 
-        'Version 1.0\nubahText is a basic dark themed text editor with simple functions.\n\n\nubahText is created by RadX.')
+        'Version idk.0\nubahText is a basic dark themed text editor with simple functions.\n\n\nubahText is created by RadX.')
 
 #mouse and keyboard inputs functions
 #used by mouse leftclick
 def texteditorWindowVisualReset(event):   #resets the colors or selected text of text editor window after finding the searched string
     texteditorWindow.tag_config('Found', foreground = 'black', background = 'white')
-#used by Ctrl+c
-def copytext(event):    #copying text function (especially useful for removing newline after every line of text)
+#used by Ctrl+S
+def savefilebind(event):
+    saveFile()
+#used by Ctrl+Shift+S
+def saveasfilebind(event):
+    saveasFile()
+#used by Ctrl-O
+def openfilebind(event):
+    openFile()
+#used by Ctrl-N
+def newfilebind(event):
+    newFile()
+#used by Ctrl+C
+def copyeditbind(event):    #copying text function (especially useful for removing newline after every line of text)
     string_in_text_editor_window =  texteditorWindow.get('1.0', END+'-1c')
     if len(string_in_text_editor_window) > 0:
         string_in_text_editor_window.rstrip()
         pyperclip.copy(string_in_text_editor_window)
+#used by Ctrl+F
+def findeditbind(event):
+    findEdit()
 
 #additional functions
 def onWindowClose():    #when closing window
@@ -200,6 +216,7 @@ fileTypes = [('All Files', '*.*'),
 
 
 
+
 ###################################################################################################
 ###################################################################################################
 ##################################MAKING MENU BAR IN THE MAIN WINDOW###############################
@@ -213,10 +230,10 @@ mainWindow.configure(menu = texteditorMenus)
 fileMenu = Menu(texteditorMenus, tearoff = False, background = '#040720', foreground = 'lightgray')
 texteditorMenus.add_cascade(label = 'File', menu = fileMenu)
 #adding submenus in the 'File' menu
-fileMenu.add_command(label = 'New', command = newFile)
-fileMenu.add_command(label = 'Open...', command = openFile)
-fileMenu.add_command(label = 'Save', command = saveFile)
-fileMenu.add_command(label = 'Save as...', command = saveasFile)
+fileMenu.add_command(label = 'New', command = newFile, accelerator = 'Ctrl+N')
+fileMenu.add_command(label = 'Open...', command = openFile, accelerator = 'Ctrl+O')
+fileMenu.add_command(label = 'Save', command = saveFile, accelerator = 'Ctrl+S')
+fileMenu.add_command(label = 'Save as...', command = saveasFile, accelerator = 'Ctrl+Shift+S')
 fileMenu.add_separator()
 fileMenu.add_command(label = 'Exit', command = exitWindow)
 
@@ -224,17 +241,17 @@ fileMenu.add_command(label = 'Exit', command = exitWindow)
 editMenu = Menu(texteditorMenus, tearoff = False, background = '#040720', foreground = 'lightgray')
 texteditorMenus.add_cascade(label = 'Edit', menu = editMenu)
 #adding submenus in the 'Edit' menu
-editMenu.add_command(label = 'Undo', command = undoEdit)
-editMenu.add_command(label = 'Redo', command = redoEdit)
+editMenu.add_command(label = 'Undo', command = undoEdit, accelerator = 'Ctrl+Z')
+editMenu.add_command(label = 'Redo', command = redoEdit, accelerator = 'Ctrl+Y')
 editMenu.add_separator()
-editMenu.add_command(label = 'Cut', command = cutEdit)
-editMenu.add_command(label = 'Copy', command = copyEdit)
-editMenu.add_command(label = 'Paste', command = pasteEdit)
+editMenu.add_command(label = 'Cut', command = cutEdit, accelerator = 'Ctrl+X')
+editMenu.add_command(label = 'Copy', command = copyEdit, accelerator = 'Ctrl+C')
+editMenu.add_command(label = 'Paste', command = pasteEdit, accelerator = 'Ctrl+V')
 # editMenu.add_command(label = 'Delete', command = deleteEdit)
 editMenu.add_separator()
-editMenu.add_command(label = 'Find', command = findEdit)
+editMenu.add_command(label = 'Find...', command = findEdit, accelerator = 'Ctrl+F')
 editMenu.add_separator()
-editMenu.add_command(label = 'Select All', command = selectAll)
+editMenu.add_command(label = 'Select All', command = selectAll, accelerator = 'Ctrl+A')
 
 #making the 'Help' menu
 helpMenu = Menu(texteditorMenus, tearoff = False, background = '#040720', foreground = 'lightgray')
@@ -253,9 +270,18 @@ helpMenu.add_command(label = 'About ubahText', command = aboutHelp)
 ########################################################################################
 ##################################ADDITIONAL FUNCTIONS##################################
 ########################################################################################
-#uses Ctrl+c to copy texts
-mainWindow.bind('<Control-Key-c>', copytext)
-
+#uses Ctrl+N to create a new file
+mainWindow.bind('<Control-n>', newfilebind)
+#uses Ctrl+O to open file
+mainWindow.bind('<Control-o>', openfilebind)
+#uses Ctrl+S to save file
+mainWindow.bind('<Control-s>', savefilebind)
+#uses Ctrl+Shift+S to save file
+mainWindow.bind('<Control-S>', saveasfilebind)
+#uses Ctrl+C to copy texts
+mainWindow.bind('<Control-c>', copyeditbind)
+#uses Ctrl+F to find text/string in the text editor window
+mainWindow.bind('<Control-f>', findeditbind)
 #when window closes without pressing the 'Exit' option in the 'File' menu
 mainWindow.protocol('WM_DELETE_WINDOW', onWindowClose)
 ########################################################################################
