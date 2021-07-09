@@ -170,7 +170,7 @@ def onWindowClose():    #when closing window
             if messagebox.askyesno('Exit ubahText', 'Do you want to save changes?'):
                 saveFile()
     mainWindow.destroy()
-def deleteEditorContent():
+def deleteEditorContent():      #delete the text editor window content
     texteditorWindow.delete('1.0', END)
     mainWindow.title('ubahText')
 
