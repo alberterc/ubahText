@@ -6,31 +6,96 @@ import pyperclip
 
 
 
+global opened_file
+global previousFileData
+global numOfNewFile
+previousFileData = None
+opened_file = False
+numOfNewFile = 1
 
 #functions for the 'File' menu
 def newFile():      #making a new file
-    # global fileName
+    #check if the editor window has any text
     if len(texteditorWindow.get('1.0', END+'-1c')) > 0:
-        if messagebox.askyesno('Text Editor', 'Do you want to save changes?'):
-            saveFile()
-    texteditorWindow.delete(0.0, END)      
-    mainWindow.title('Text Editor')
+        global opened_file
+        #check if the content in the editor is a new file
+        #opened_file returns false if it's a new file
+        if opened_file:
+            #check if the text in the editor is different from the text in the saved file
+            currentFileData = texteditorWindow.get('1.0', END)
+            if currentFileData.rstrip() != previousFileData.rstrip():
+                if messagebox.askyesno('Save File', 'Do you want to save changes?'):
+                    saveFile()
+        else:
+            if messagebox.askyesno('Save File', 'Do you want to save changes?'):
+                saveFile()
+        deleteEditorContent()
+    mainWindow.title('ubahText')        
 def openFile():     #opening an existing file
-    chooseFile = filedialog.askopenfile(parent = mainWindow, mode = 'r', filetypes= fileTypes, defaultextension = fileTypes)
-    if chooseFile != None:
-        readChosenFile = chooseFile.read()
-        texteditorWindow.delete(0.0, END)
-        texteditorWindow.insert(0.0, readChosenFile)
+    global opened_file
+    global previousFileData
+    if len(texteditorWindow.get('1.0', END+'-1c')) > 0:
+        #check if the content in the editor is a new file
+        #opened_file returns false if it's a new file
+        if opened_file:
+            #check if the text in the editor is different from the text in the saved file
+            currentFileData = texteditorWindow.get('1.0', END)
+            if currentFileData.rstrip() != previousFileData.rstrip():
+                if messagebox.askyesno('Save File', 'Do you want to save changes?'):
+                    saveFile()
+        else:
+            if messagebox.askyesno('Save File', 'Do you want to save changes?'):
+                saveFile()
+    chooseFile = filedialog.askopenfilename(parent = mainWindow, filetypes= fileTypes, defaultextension = fileTypes)
+    if chooseFile:
+        #store file name
+        opened_file = chooseFile
+        #delete the current text in editor window
+        texteditorWindow.delete('1.0', END)
+        #change main window title to the opened file
+        name = chooseFile
+        mainWindow.title('{0} - ubahText'.format(name))
+        #open the file
+        chooseFile = open(chooseFile, 'r')
+        fileData = chooseFile.read()
+        #store the data of the file
+        previousFileData = fileData
+        texteditorWindow.insert(END, fileData)
+        chooseFile.close()
 def saveFile():     #saving a new file
-    savePath = filedialog.asksaveasfile(mode = 'w', filetypes= fileTypes, defaultextension = fileTypes)
-    if savePath != None:
-        newFileData = texteditorWindow.get('1.0', END)
-        savePath.write(newFileData)
+    global opened_file
+    if opened_file:
+        #saves the file
+        fileData = open(opened_file, 'w')
+        fileData.write(texteditorWindow.get('1.0', END))
+        fileData.close()
+        #stores the saved data file
+        fileData = open(opened_file, 'r')
+        global previousFileData
+        previousFileData = fileData.read()
+        fileData.close()
+    else:
+        saveasFile()
 def saveasFile():   #saving as a new file
-    savePath = filedialog.asksaveasfile(mode = 'w', filetypes= fileTypes, defaultextension = fileTypes)
-    if savePath != None:
-        newFileData = texteditorWindow(0.0, END)
-        savePath.write(newFileData.rstrip())
+    global numOfNewFile
+    global previousFileData
+    defaultFileName = 'Untitled-{0}'.format(numOfNewFile)
+    savePath = filedialog.asksaveasfilename(filetypes= fileTypes, defaultextension = fileTypes, initialfile = defaultFileName + '.txt')
+    if savePath:
+        global opened_file
+        opened_file = savePath
+        #change main window title to the saved file
+        name = savePath
+        mainWindow.title('{0} - ubahText'.format(name))
+        #saves the file
+        newFileData = texteditorWindow.get('1.0', END)
+        savePath = open(savePath, 'w+')
+        savePath.write(newFileData)
+        #stores the saved data file
+        previousFileData = newFileData
+        savePath.close()
+
+        numOfNewFile += 1
 def exitWindow():   #exiting the program
     onWindowClose()
 
@@ -54,7 +119,7 @@ def pasteEdit():    #paste from the clipboard (latest data)
 # def deleteEdit():
 #     selectedText = texteditorWindow.selection_get()
 #     if len(selectedText) > 0:
-#         texteditorWindow.delete(selectedText)
+#         texteditorWindow.delete(END, selectedText)
 def findEdit():     #find a specific string from the whole text editor window
     texteditorWindow.tag_remove('Found', '1.0', END)
     findWindow = simpledialog.askstring('Find', 'Find what:')
@@ -90,11 +155,24 @@ def copytext(event):    #copying text function (especially useful for removing n
 
 #additional functions
 def onWindowClose():    #when closing window
+    #check if the editor window has any text
     if len(texteditorWindow.get('1.0', END+'-1c')) > 0:
-        if messagebox.askyesno('Text Editor', 'Do you want to save changes?'):
-            saveFile()
+        global opened_file
+        #check if the content in the editor is a new file
+        #opened_file returns false if it's a new file
+        if opened_file:
+            #check if the text in the editor is different from the text in the saved file
+            currentFileData = texteditorWindow.get('1.0', END)
+            if currentFileData.rstrip() != previousFileData.rstrip():
+                if messagebox.askyesno('Exit ubahText', 'Do you want to save changes?'):
+                    saveFile()
+        else:
+            if messagebox.askyesno('Exit ubahText', 'Do you want to save changes?'):
+                saveFile()
     mainWindow.destroy()
-
+def deleteEditorContent():
+    texteditorWindow.delete('1.0', END)
+    mainWindow.title('ubahText')
 
 
 
@@ -122,13 +200,12 @@ fileTypes = [('All Files', '*.*'),
 
 
 
-
 ###################################################################################################
 ###################################################################################################
-##################################MAKING MENUS IN THE MAIN WINDOW##################################
+##################################MAKING MENU BAR IN THE MAIN WINDOW###############################
 ###################################################################################################
 ###################################################################################################
-#making the menus
+#init the menus
 texteditorMenus = Menu(mainWindow, background = '#040720', foreground = 'lightgray')
 mainWindow.configure(menu = texteditorMenus)
 
@@ -166,7 +243,7 @@ texteditorMenus.add_cascade(label = 'Help', menu = helpMenu)
 helpMenu.add_command(label = 'About ubahText', command = aboutHelp)
 ###################################################################################################
 ###################################################################################################
-##################################MAKING MENUS IN THE MAIN WINDOW##################################
+##################################MAKING MENU BAR IN THE MAIN WINDOW###############################
 ###################################################################################################
 ###################################################################################################
 
@@ -184,8 +261,6 @@ mainWindow.protocol('WM_DELETE_WINDOW', onWindowClose)
 ########################################################################################
 ##################################ADDITIONAL FUNCTIONS##################################
 ########################################################################################
-
-
 
 
 texteditorWindow.pack(fill = BOTH, expand = YES)
