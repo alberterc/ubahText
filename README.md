@@ -10,4 +10,4 @@ Simple dark themed text editor with basic functionality (similiar to Notepad).
 ![window](https://user-images.githubusercontent.com/85069947/125113580-0a65bd00-e113-11eb-9174-9c1e85badfd2.JPG)
 
 ## Developer
-Albert E (RadX) vradnisntlong@gmail.com
+Albert E (albertenrico.5@gmail.com)
